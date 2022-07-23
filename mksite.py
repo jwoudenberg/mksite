@@ -3,6 +3,8 @@
 
 import argparse
 from pathlib import Path
+from collections import defaultdict
+from subprocess import run
 
 
 def main():
@@ -11,7 +13,7 @@ def main():
         "paths",
         help="path to a file to include",
         metavar="PATH",
-        action="append",
+        action="store",
         nargs="+",
         type=Path,
     )
@@ -27,11 +29,85 @@ Filters get applied to matching files in the order they are specified""",
         default=[],
     )
     args = parser.parse_args()
-    print(args)
+    files = readFiles(args.paths)
+    filteredFiles = applyFilters(files, args.filter)
+    print(filteredFiles)
+
+
+def readFiles(paths):
+    files = []
+    cwd = Path.cwd()
+    for path in paths:
+        if not path.exists():
+            raise UserError(f"Path does not exist: {path}")
+        relPath = normalizePath(cwd, path)
+        contents = path.read_bytes()
+        files.append({"path": relPath, "contents": contents})
+    return files
+
+
+def applyFilters(files, filters):
+    """
+    Apply all filters in order on matching files
+
+    File contents are modified by filter
+
+    >>> applyFilters(\
+            [ {'path': Path('hi.txt'), 'contents': b'hi'} ],\
+            [ ("txt", "md", "echo ho") ]\
+            )
+    [{'path': PosixPath('hi.md'), 'contents': b'ho\\n'}]
+
+    Filter matches only files with the right extension
+
+    >>> applyFilters(\
+            [ {'path': Path('hi.md'), 'contents': b''}\
+            , {'path': Path('style.css'), 'contents': b''}\
+            ],\
+            [ ("md", "html", "cat") ])
+    [{'path': PosixPath('style.css'), 'contents': b''}, \
+{'path': PosixPath('hi.html'), 'contents': b''}]
+
+    Files can pass through multiple filters in sequence
+
+    >>> applyFilters(\
+            [ {'path': Path('recipe.cooklang'), 'contents': b''}\
+            , {'path': Path('index.md'), 'contents': b''}\
+            ],\
+            [ ("cooklang", "md", "cat"), ("md", "html", "cat") ])
+    [{'path': PosixPath('index.html'), 'contents': b''}, \
+{'path': PosixPath('recipe.html'), 'contents': b''}]
+    """
+
+    filesByExtension = groupBy(files, lambda file: file["path"].suffix)
+    for (inExt, outExt, cmd) in filters:
+        for file in filesByExtension.pop(f".{inExt}"):
+            file["path"] = file["path"].with_suffix(f".{outExt}")
+            res = run(cmd, input=file["contents"], shell=True, capture_output=True)
+            if res.returncode > 0:
+                raise UserError(f"Running filter cmd {cmd} failed:\n{res.stdout}")
+            file["contents"] = res.stdout
+            filesByExtension[f".{outExt}"].append(file)
+    return [file for filesWithExt in filesByExtension.values() for file in filesWithExt]
 
 
 class UserError(Exception):
     pass
+
+
+def groupBy(items, groupFn):
+    """
+    Group items by a value returned from grouping function
+
+    >>> groupBy(['a', 'aa', 'b'], lambda str: len(str))
+    defaultdict(<class 'list'>, {1: ['a', 'b'], 2: ['aa']})
+    """
+
+    groups = defaultdict(list)
+    for item in items:
+        groups[groupFn(item)].append(item)
+
+    return groups
 
 
 def normalizePath(cwd, path):
