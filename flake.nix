@@ -7,16 +7,11 @@
   };
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs { inherit system; };
-        python = "python310";
+      let pkgs = import nixpkgs { inherit system; };
       in {
-        devShell = pkgs.mkShell {
-          nativeBuildInputs = [
-            pkgs."${python}"
-            pkgs."${python}Packages".black
-            pkgs."${python}Packages".flake8
-          ];
+        apps.md-to-html = {
+          type = "app";
+          program = "${pkgs.callPackage ./md-to-html/default.nix { }}";
         };
       });
 }
