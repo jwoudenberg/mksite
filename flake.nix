@@ -13,5 +13,7 @@
           type = "app";
           program = "${pkgs.callPackage ./md-to-html/default.nix { }}";
         };
+
+        devShell = pkgs.mkShell { buildInputs = [ ]; };
       });
 }
