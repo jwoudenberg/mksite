@@ -7,13 +7,14 @@
   };
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
-      let pkgs = import nixpkgs { inherit system; };
+      let pkgs = import nixpkgs { system = system; };
       in {
-        apps.md-to-html = {
-          type = "app";
-          program = "${pkgs.callPackage ./md-to-html/default.nix { }}";
-        };
+        packages.md-to-html = pkgs.callPackage ./md-to-html/default.nix { };
+        packages.table-of-contents =
+          pkgs.callPackage ./table-of-contents/default.nix { };
 
-        devShell = pkgs.mkShell { buildInputs = [ ]; };
+        devShell = pkgs.mkShell {
+          buildInputs = [ pkgs.nushell pkgs.haskellPackages.shelltestrunner ];
+        };
       });
 }
