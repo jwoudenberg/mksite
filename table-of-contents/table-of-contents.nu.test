@@ -1,0 +1,10 @@
+$$$ ./table-of-contents.nu testfiles/*; echo ''
+>>>
+<ul>
+  <li>
+    <a href="testfiles/birds.html">Look at them birds!</a>
+  </li>
+  <li>
+    <a href="testfiles/plants.html">Plants!</a>
+  </li>
+</ul>
