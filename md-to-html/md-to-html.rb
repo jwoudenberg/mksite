@@ -5,7 +5,7 @@ require "redcarpet"
 require "yaml"
 require "cgi"
 
-contents = $stdin.read
+contents = $stdin.read.force_encoding('UTF-8')
 metadata = {}
 if contents.start_with?("---")
   _, frontmatter, contents = contents.split("---")
