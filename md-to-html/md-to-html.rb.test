@@ -1,0 +1,49 @@
+# Without frontmatter
+<<<
+# Insects
+
+You've got:
+
+- Bees
+- Spiders
+- Butterflies
+$$$ ./md-to-html.rb
+>>>
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<h1>Insects</h1>
+
+<p>You&#39;ve got:</p>
+
+<ul>
+<li>Bees</li>
+<li>Spiders</li>
+<li>Butterflies</li>
+</ul>
+</body>
+</html>
+
+# With frontmatter
+<<<
+---
+title: Insects
+kingdom: Animalia
+phylum: Arthropoda
+---
+# Insects
+$$$ ./md-to-html.rb
+>>>
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="title" content="Insects" />
+<meta name="kingdom" content="Animalia" />
+<meta name="phylum" content="Arthropoda" />
+</head>
+<body>
+<h1>Insects</h1>
+</body>
+</html>

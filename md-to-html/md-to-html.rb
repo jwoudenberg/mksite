@@ -23,7 +23,7 @@ def puts_meta(key, value)
   end
 end
 
-puts "<!doctype>"
+puts "<!DOCTYPE html>"
 puts "<html>"
 puts "<head>"
 metadata.each { |key, value| puts_meta(key, value) }
@@ -31,4 +31,4 @@ puts "</head>"
 puts "<body>"
 puts body
 puts "</body>"
-puts "</html"
+puts "</html>"
